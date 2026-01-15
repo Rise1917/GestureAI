@@ -1,0 +1,552 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignEcho - Видео жестов</title>
+    <style>
+        /* Весь ваш CSS код */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: linear-gradient(135deg, #2d2f47 0%, #1a1b2e 100%); min-height: 100vh; color: white; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); }
+        .logo { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 600; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #00d4aa, #00b894); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .nav { display: flex; gap: 30px; font-size: 16px; }
+        .nav a { color: rgba(255, 255, 255, 0.8); text-decoration: none; transition: color 0.3s; }
+        .nav a:hover { color: white; }
+        .user-profile { background: #00d4aa; padding: 8px 20px; border-radius: 25px; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); }
+        .main-content { display: flex; gap: 40px; padding: 40px; max-width: 1400px; margin: 0 auto; }
+        .input-section { flex: 1; max-width: 500px; }
+        .input-card { background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .card-title { font-size: 24px; font-weight: 600; margin-bottom: 20px; text-align: center; }
+        .input-group { margin-bottom: 20px; }
+        .input-label { display: block; margin-bottom: 8px; font-size: 14px; color: rgba(255, 255, 255, 0.8); }
+        .text-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.05); color: white; font-size: 16px; transition: all 0.3s; }
+        .text-input:focus { outline: none; border-color: #00d4aa; background: rgba(255, 255, 255, 0.1); }
+        .text-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .button-group { display: flex; gap: 15px; margin-top: 25px; }
+        .btn { flex: 1; padding: 15px 20px; border-radius: 12px; border: none; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #00d4aa, #00b894); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 212, 170, 0.3); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
+        /* Новый стиль для кнопки голосового ввода */
+        .btn-voice {
+            background: rgba(0, 100, 200, 0.8); /* Синий цвет для голосового ввода */
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-voice:hover {
+            background: rgba(0, 100, 200, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 100, 200, 0.3);
+        }
+        .btn-voice.active { /* Стиль для активной записи */
+            background: linear-gradient(135deg, #ff4d4d, #cc0000); /* Красный цвет при записи */
+            box-shadow: 0 10px 25px rgba(255, 77, 77, 0.5);
+        }
+
+        .video-section { flex: 1; max-width: 600px; }
+        .video-card { background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); height: 450px; display: flex; flex-direction: column; }
+        .video-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .video-title { font-size: 20px; font-weight: 600; }
+        .video-word { background: rgba(0, 212, 170, 0.2); color: #00d4aa; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; }
+        .video-container { flex: 1; background: rgba(0, 0, 0, 0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .video-container video { width: 100%; height: 100%; object-fit: contain; }
+        .video-placeholder { text-align: center; color: rgba(255, 255, 255, 0.6); padding: 20px; }
+        .video-placeholder-icon { width: 80px; height: 80px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 32px; }
+        .video-controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .control-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.1); color: white; font-size: 20px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+        .control-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
+        .control-btn.play { background: linear-gradient(135deg, #00d4aa, #00b894); }
+        .control-btn.play:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0, 212, 170, 0.4); }
+        .history-section { margin-top: 30px; }
+        .history-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: rgba(255, 255, 255, 0.9); }
+        .history-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .history-item { background: rgba(255, 255, 255, 0.1); padding: 8px 15px; border-radius: 20px; font-size: 14px; color: rgba(255, 255, 255, 0.8); cursor: pointer; transition: all 0.3s; border: 1px solid transparent; }
+        .history-item:hover { background: rgba(0, 212, 170, 0.2); border-color: rgba(0, 212, 170, 0.3); color: white; }
+        @media (max-width: 768px) { .main-content { flex-direction: column; padding: 20px; } .header { padding: 15px 20px; } .nav { display: none; } .user-profile { display: none; } }
+        /* Дополнительные стили для хедера и мобильного меню */
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            font-size: 16px;
+        }
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: #00d4aa;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        .profile-button:hover {
+            background: #00b894;
+        }
+        .profile-button img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .login-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+        .login-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .burger {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            background: rgba(26, 27, 46, 0.95);
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        .mobile-menu.open {
+            display: flex;
+        }
+        .mobile-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        .mobile-menu a:last-child {
+            border-bottom: none;
+        }
+        @media (max-width: 768px) {
+            header .nav-links {
+                display: none;
+            }
+            .burger {
+                display: block;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}"/>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="{% url 'home' %}" style="text-decoration: none; color:#fff ;" class="logo">
+                <img src="{% static 'images/Logopng.png' %}" alt="SignEcho" />
+                <span>SignEcho</span>
+            </a>
+            
+            <nav class="nav-links">
+                <a href="#about">О нас</a>
+                <a href="#contacts">Контакты</a>
+                <a href="#help">Помощь</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="profile-button">
+                        <span>{{ user.username }}</span>
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="Аватар" />
+                        {% else %}
+                            <img src="{% static 'images/default_avatar.jpg' %}" alt="Аватар" />
+                        {% endif %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="login-btn">Войти</a>
+                {% endif %}
+            </nav>
+            
+            <button class="burger" aria-label="Открыть меню">
+                ☰
+            </button>
+        </div>
+        
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="#about">О нас</a>
+            <a href="#contacts">Контакты</a>
+            <a href="#help">Помощь</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="login-btn">Профиль</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="login-btn">Войти</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="input-section">
+            <div class="input-card">
+                <h2 class="card-title">Поиск жестов</h2>
+                
+                <div class="input-group">
+                    <label class="input-label">Введите слово</label>
+                    <input type="text" name="word" class="text-input" placeholder="Например: привет, спасибо, семья..." id="wordInput">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="searchGesture()">Найти жест</button>
+                    <button class="btn btn-secondary" onclick="clearInput()">Очистить</button>
+                    {# НОВАЯ КНОПКА ДЛЯ ГОЛОСОВОГО ВВОДА #}
+                    <button class="btn btn-voice" id="voiceInputBtn">
+                        <span id="micIcon">🎙️</span> <span id="voiceBtnText">Голосовой ввод</span>
+                    </button>
+                </div>
+
+                <div class="history-section">
+                    <h3 class="history-title">Быстрые слова</h3>
+                    <div class="history-list" id="historyList">
+                        <span class="history-item" onclick="selectWordAndSearch('Привет!')">Привет!</span>
+                        <span class="history-item" onclick="selectWordAndSearch('спасибо')">спасибо</span>
+                        <span class="history-item" onclick="selectWordAndSearch('семья')">семья</span>
+                        <span class="history-item" onclick="selectWordAndSearch('работа')">работа</span>
+                        <span class="history-item" onclick="selectWordAndSearch('дом')">дом</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="video-section">
+            <div class="video-card">
+                <div class="video-header">
+                    <h3 class="video-title">Видео жеста</h3>
+                    <span class="video-word" id="currentWord">Введите слово</span>
+                </div>
+
+                <div class="video-container" id="videoContainer">
+                    <div class="video-placeholder" id="initialPlaceholder">
+                        <div class="video-placeholder-icon">🎥</div>
+                        <p>Введите слово для поиска жеста</p>
+                    </div>
+                </div>
+
+                <div class="video-controls">
+                    <button class="control-btn" id="replayBtn" onclick="replayVideo()" disabled>⏮</button>
+                    <button class="control-btn play" id="playPauseBtn" onclick="playPauseVideo()" disabled>▶</button>
+                    <button class="control-btn" id="nextBtn" onclick="nextVideo()" disabled>⏭</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // JS для мобильного меню (бургер)
+        const burger = document.querySelector('.burger');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        burger.addEventListener('click', () => {
+            mobileMenu.classList.toggle('open');
+        });
+
+        const wordInput = document.getElementById('wordInput');
+        const currentWordDisplay = document.getElementById('currentWord');
+        const videoContainer = document.getElementById('videoContainer');
+        const initialPlaceholder = document.getElementById('initialPlaceholder');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const replayBtn = document.getElementById('replayBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const historyList = document.getElementById('historyList');
+        // НОВЫЕ ЭЛЕМЕНТЫ ДЛЯ ГОЛОСОВОГО ВВОДА
+        const voiceInputBtn = document.getElementById('voiceInputBtn');
+        const micIcon = document.getElementById('micIcon');
+        const voiceBtnText = document.getElementById('voiceBtnText');
+
+        let currentVideoElement = null;
+        let recognition = null; // Переменная для объекта распознавания речи
+
+        // Инициализация Web Speech API
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false; // Распознавать одну фразу и остановиться
+            recognition.lang = 'ru-RU'; // Устанавливаем русский язык
+            recognition.interimResults = false; // Получать только окончательный результат
+
+            recognition.onstart = () => {
+                console.log('Голосовой ввод начат...');
+                voiceInputBtn.classList.add('active');
+                micIcon.textContent = '🔴'; // Показываем красный круг для записи
+                voiceBtnText.textContent = 'Слушаю...';
+                wordInput.value = ''; // Очищаем поле ввода перед записью
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                console.log('Распознанный текст:', transcript);
+                wordInput.value = transcript;
+                searchGesture(); // Запускаем поиск после распознавания
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Ошибка распознавания речи:', event.error);
+                voiceInputBtn.classList.remove('active');
+                micIcon.textContent = '🎙️';
+                voiceBtnText.textContent = 'Голосовой ввод';
+                if (event.error === 'not-allowed') {
+                    alert('Доступ к микрофону заблокирован. Пожалуйста, разрешите доступ к микрофону в настройках браузера.');
+                } else if (event.error === 'no-speech') {
+                    alert('Ничего не было распознано. Попробуйте еще раз.');
+                } else {
+                    alert('Произошла ошибка голосового ввода: ' + event.error);
+                }
+            };
+
+            recognition.onend = () => {
+                console.log('Голосовой ввод завершен.');
+                voiceInputBtn.classList.remove('active');
+                micIcon.textContent = '🎙️';
+                voiceBtnText.textContent = 'Голосовой ввод';
+            };
+
+            voiceInputBtn.addEventListener('click', () => {
+                if (recognition) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.error('Ошибка при запуске распознавания:', e);
+                        alert('Не удалось начать голосовой ввод. Возможно, он уже активен или произошла другая ошибка.');
+                    }
+                }
+            });
+        } else {
+            // Если Web Speech API не поддерживается
+            voiceInputBtn.disabled = true;
+            voiceInputBtn.textContent = 'Голосовой ввод не поддерживается';
+            voiceInputBtn.style.backgroundColor = '#555';
+            voiceInputBtn.style.cursor = 'not-allowed';
+            console.warn('Web Speech API не поддерживается в этом браузере.');
+            alert('Ваш браузер не поддерживает голосовой ввод. Пожалуйста, используйте Google Chrome или другой современный браузер.');
+        }
+
+        function setVideoContainerContent(type, message = '', videoUrl = '') {
+            videoContainer.innerHTML = '';
+
+            if (type === 'placeholder') {
+                videoContainer.innerHTML = `
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">🎥</div>
+                        <p>${message}</p>
+                    </div>
+                `;
+                currentVideoElement = null;
+                disableVideoControls();
+            } else if (type === 'loading') {
+                videoContainer.innerHTML = `
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">🎬</div>
+                        <p>Загрузка видео для слова: "${message}"</p>
+                    </div>
+                `;
+                currentVideoElement = null;
+                disableVideoControls();
+            } else if (type === 'error') {
+                videoContainer.innerHTML = `
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">😔</div>
+                        <p>${message}</p>
+                    </div>
+                `;
+                currentVideoElement = null;
+                disableVideoControls();
+            } else if (type === 'video' && videoUrl) {
+                const video = document.createElement('video');
+                video.src = videoUrl;
+                video.controls = false;
+                video.autoplay = true;
+                video.loop = false;
+                video.preload = 'auto';
+                video.onended = () => {
+                    playPauseBtn.textContent = '▶';
+                    playPauseBtn.classList.remove('pause');
+                    playPauseBtn.classList.add('play');
+                };
+                videoContainer.appendChild(video);
+                currentVideoElement = video;
+                enableVideoControls();
+                playPauseBtn.textContent = '⏸';
+                playPauseBtn.classList.remove('play');
+                playPauseBtn.classList.add('pause');
+            }
+        }
+
+        function disableVideoControls() {
+            playPauseBtn.disabled = true;
+            replayBtn.disabled = true;
+            nextBtn.disabled = true;
+            playPauseBtn.textContent = '▶';
+            playPauseBtn.classList.remove('pause');
+            playPauseBtn.classList.add('play');
+        }
+
+        function enableVideoControls() {
+            playPauseBtn.disabled = false;
+            replayBtn.disabled = false;
+            nextBtn.disabled = false;
+        }
+
+        async function searchGesture() {
+            const word = wordInput.value.trim();
+            currentWordDisplay.textContent = word || 'Введите слово';
+
+            if (!word) {
+                setVideoContainerContent('placeholder', 'Введите слово для поиска жеста');
+                return;
+            }
+
+            setVideoContainerContent('loading', word);
+
+            try {
+
+                const response = await fetch('/api/search/', { // Обратите внимание на конечный слэш здесь
+
+
+                    method: 'POST',
+
+
+                    headers: {
+
+
+                        'Content-Type': 'application/json',
+
+
+                    },
+
+
+                    body: JSON.stringify({ word: word }),
+
+
+                });
+
+
+                const data = await response.json();
+
+
+                if (response.ok) {
+
+                    setVideoContainerContent('video', '', data.video_url);
+
+                    addToHistory(word);
+
+                } else {
+
+                    setVideoContainerContent('error', data.error);
+
+                }
+
+            } catch (error) {
+                console.error('Ошибка при выполнении запроса:', error);
+                setVideoContainerContent('error', `Произошла ошибка при поиске: ${error.message}`);
+            }
+        }
+
+        function selectWordAndSearch(word) {
+            wordInput.value = word;
+            searchGesture();
+        }
+
+        function clearInput() {
+            wordInput.value = '';
+            currentWordDisplay.textContent = 'Введите слово';
+            setVideoContainerContent('placeholder', 'Введите слово для поиска жеста');
+        }
+
+        function addToHistory(word) {
+            const existingItems = Array.from(historyList.children).map(item => item.textContent);
+            if (!existingItems.includes(word)) {
+                const span = document.createElement('span');
+                span.classList.add('history-item');
+                span.textContent = word;
+                span.onclick = () => selectWordAndSearch(word);
+
+                if (historyList.firstChild) {
+                    historyList.insertBefore(span, historyList.firstChild);
+                } else {
+                    historyList.appendChild(span);
+                }
+
+                while (historyList.children.length > 5) {
+                    historyList.removeChild(historyList.lastChild);
+                }
+            }
+        }
+
+        function playPauseVideo() {
+            if (currentVideoElement) {
+                if (currentVideoElement.paused) {
+                    currentVideoElement.play();
+                    playPauseBtn.textContent = '⏸';
+                    playPauseBtn.classList.remove('play');
+                    playPauseBtn.classList.add('pause');
+                } else {
+                    currentVideoElement.pause();
+                    playPauseBtn.textContent = '▶';
+                    playPauseBtn.classList.remove('pause');
+                    playPauseBtn.classList.add('play');
+                }
+            }
+        }
+
+        function replayVideo() {
+            if (currentVideoElement) {
+                currentVideoElement.currentTime = 0;
+                currentVideoElement.play();
+                playPauseBtn.textContent = '⏸';
+                playPauseBtn.classList.remove('play');
+                playPauseBtn.classList.add('pause');
+            }
+        }
+
+        function nextVideo() {
+            console.log('Кнопка "Следующее видео" нажата. Пока нет следующего видео.');
+        }
+
+        wordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchGesture();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            clearInput();
+        });
+    </script>
+</body>
+</html>

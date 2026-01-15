@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Профиль</title>
+	<link rel="stylesheet" href="{% static 'css/Profile.css' %}" />
+</head>
+
+<body>
+	<header>
+		<a style="text-decoration: none; color: #fff;" href="{% url 'home' %}" class="logo">
+			<img src="{% static 'Images/Logopng.png' %}" alt="SignEcho" />
+			<span>SignEcho</span>
+		</a>
+		<nav>
+			<a href="#">О нас</a>
+			<a href="#">Контакты</a>
+			<a href="#">Помощь</a>
+		</nav>
+		<a style="text-decoration: none;" href="{% url 'profile' %}" class="profile-button">
+			<span>{{ user.username }}</span>
+			{% if user.avatar %}
+				<img src="{{ user.avatar.url }}" alt="Аватар" />
+			{% else %}
+				<img src="{% static 'images/default_avatar.jpg' %}" alt="Аватар" />
+			{% endif %}
+		</a>
+	</header>
+
+	<main>
+		<div class="profile-section">
+			<div class="photo-box">
+			{% if user.avatar %}
+				<img src="{{ user.avatar.url }}" alt="Аватар" />
+			{% else %}
+				<img src="{% static 'images/default_avatar.jpg' %}" alt="Аватар" />
+			{% endif %}
+				<div class="user-info">
+					<h2>{{ user.username }}</h2>
+					<p>{{ user.email }}</p>
+					<div class="buttons">
+						<a href="{% url 'logout' %}" class="btn green">Выйти из аккаунта</a>
+					</div>
+				</div>
+			</div>
+
+			<form class="edit-form" method="post" enctype="multipart/form-data" action="{% url 'profile' %}">
+				{% csrf_token %}
+				<label>Новое имя пользователя</label>
+				<input type="text" name="username" placeholder="Имя пользователя" value="{{ user.username }}" required/>
+
+				<label>Новый аватар</label>
+				<input type="file" name="avatar" accept="image/*"required/>
+
+				<label>Пароль</label>
+				<input type="password" name="password" placeholder="Новый пароль" value="*******" required/>
+
+				<button type="submit" class="btn save-btn">Сохранить</button>
+			</form>
+		</div>
+	</main>
+</body>
+
+</html>
